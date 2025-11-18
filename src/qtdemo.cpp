@@ -14,10 +14,20 @@ qtdemo::qtdemo(QWidget* parent)
     player->setAudioOutput(audioOutput);
 
     //设置初始音量50%
-    audioOutput->setVolume(0.5);
-    
+    audioOutput->setVolume(0.75);
+    ui->volumeSlider->setRange(0, 100);
+    ui->volumeSlider->setValue(75);
+    ui->volumeValueLabel->setText("75%");
     //连接播放列表双击信号
     connect(ui->playlist, &QListWidget::itemDoubleClicked, this, &qtdemo::onPlaylistItemDoubleClicked);
+
+    //连接播放器位置变化信号
+    connect(player, &QMediaPlayer::positionChanged, this, &qtdemo::onPositionChanged);
+    connect(player, &QMediaPlayer::durationChanged, this, &qtdemo::onDurationChanged);
+    connect(ui->positionSlider, &QSlider::sliderMoved, this, &qtdemo::onMediaSliderMoved);
+
+    //连接音量滑动变化
+    connect(ui->volumeSlider, &QSlider::sliderMoved, this, &qtdemo::onVolumeSliderMoved);
 }
 
 qtdemo::~qtdemo()
@@ -119,4 +129,30 @@ void qtdemo::onPlaylistItemDoubleClicked(QListWidgetItem *item){
     int index = ui->playlist->row(item);
     loadTrackByIndex(index);
     player->play();
+}
+
+void qtdemo::onPositionChanged(qint64 position){
+    if(!ui->positionSlider->isSliderDown()){
+        ui->positionSlider->setValue(position);
+    }
+    ui->currentTimeLabel->setText(QString("%1:%2")
+        .arg(position / 60000, 2, 10, QChar('0'))
+        .arg((position / 1000) % 60, 2, 10, QChar('0')));
+}
+
+void qtdemo::onMediaSliderMoved(int position){
+    player->setPosition(position);
+}
+
+void qtdemo::onDurationChanged(qint64 duration){
+    ui->positionSlider->setRange(0, duration);
+    ui->totalTimeLabel->setText(QString("%1:%2")
+        .arg(duration / 60000, 2, 10, QChar('0'))
+        .arg((duration / 1000) % 60, 2, 10, QChar('0')));
+}
+
+void qtdemo::onVolumeSliderMoved(int position){
+    qreal volume = static_cast<qreal>(position) / 100.0;
+    audioOutput->setVolume(volume);
+    ui->volumeValueLabel->setText(QString("%1%").arg(position));
 }
