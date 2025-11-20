@@ -96,7 +96,7 @@
       <item>
        <widget class="QPushButton" name="pauseButton">
         <property name="text">
-         <string>停止</string>
+         <string>暂停</string>
         </property>
        </widget>
       </item>
@@ -190,6 +190,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionExit"/>
+    <addaction name="actionSetting"/>
    </widget>
    <widget class="QMenu" name="menuPlay">
     <property name="title">
@@ -197,7 +198,7 @@
     </property>
     <addaction name="actionPlay"/>
     <addaction name="actionPause"/>
-    <addaction name="actionStop"/>
+    <addaction name="action"/>
     <addaction name="actionPrev"/>
     <addaction name="actionNext"/>
    </widget>
@@ -232,32 +233,20 @@
    <property name="text">
     <string>播放/暂停(&amp;P)</string>
    </property>
-   <property name="shortcut">
-    <string>Space</string>
-   </property>
   </action>
   <action name="actionPause">
    <property name="text">
     <string>暂停(&amp;A)</string>
    </property>
-   <property name="shortcut">
-    <string>P</string>
-   </property>
   </action>
-  <action name="actionStop">
+  <action name="action">
    <property name="text">
     <string>停止(&amp;S)</string>
-   </property>
-   <property name="shortcut">
-    <string>S</string>
    </property>
   </action>
   <action name="actionPrev">
    <property name="text">
     <string>上一首(&amp;L)</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Left</string>
    </property>
   </action>
   <action name="actionNext">
@@ -271,6 +260,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>关于(&amp;A)</string>
+   </property>
+  </action>
+  <action name="actionSetting">
+   <property name="text">
+    <string>设置</string>
    </property>
   </action>
  </widget>

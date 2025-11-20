@@ -1,6 +1,8 @@
 #include "qtdemo.h"
 #include<QFileDialog>
 #include<QFileInfo>
+#include<QMessageBox>
+#include<QShortcut>
 
 qtdemo::qtdemo(QWidget* parent)
     : QMainWindow(parent)
@@ -28,11 +30,57 @@ qtdemo::qtdemo(QWidget* parent)
 
     //连接音量滑动变化
     connect(ui->volumeSlider, &QSlider::sliderMoved, this, &qtdemo::onVolumeSliderMoved);
+
+    //连接播放结束跳转下一首
+    connect(player, &QMediaPlayer::mediaStatusChanged, this, &qtdemo::onMediaStatusChanged);
+
+    //连接菜单动作信号
+    connect(ui->actionOpen, &QAction::triggered, this, &qtdemo::on_openButton_clicked);
+    connect(ui->actionExit, &QAction::triggered, this, &qtdemo::close);
+    connect(ui->actionPlay, &QAction::triggered, this, &qtdemo::on_playButton_clicked);
+    connect(ui->actionPause, &QAction::triggered, this, &qtdemo::on_pauseButton_clicked);
+    connect(ui->actionNext, &QAction::triggered, this, &qtdemo::on_nextButton_clicked);
+    connect(ui->actionPrev, &QAction::triggered, this, &qtdemo::on_prevButton_clicked);
+    connect(ui->actionAbout, &QAction::triggered, [this](){
+        QMessageBox::about(this, "关于QT音乐播放器", "QT音乐播放器示例程序\n作者: Nlzify\n2025");
+    });
+    connect(ui->actionSetting, &QAction::triggered, this, &qtdemo::on_actionSetting_triggered);
+
+    // 使用QShortcut添加快捷键
+    QShortcut *playPauseShortcut = new QShortcut(QKeySequence(Qt::Key_Space), this);
+    connect(playPauseShortcut, &QShortcut::activated, this, [this]() {
+        qDebug() << "Space pressed. Playback state:" << player->playbackState();
+        if (player->playbackState() == QMediaPlayer::PlayingState) {
+            on_pauseButton_clicked();
+        } else {
+            on_playButton_clicked();
+        }
+    });
 }
 
 qtdemo::~qtdemo()
 {
     delete ui; 
+    if(settingsDialog){
+        delete settingsDialog;
+    }
+}
+
+// 新增：设置菜单槽函数
+void qtdemo::on_actionSetting_triggered()
+{
+    // 如果设置对话框不存在，创建它
+    if (!settingsDialog) {
+        settingsDialog = new SettingsDialog(this);
+    }
+    
+    // 显示设置对话框（模态对话框）
+    settingsDialog->exec();
+    
+    // 或者使用非模态对话框：
+    // settingsDialog->show();
+    // settingsDialog->raise();
+    // settingsDialog->activateWindow();
 }
 
 void qtdemo::on_openButton_clicked(){
@@ -155,4 +203,24 @@ void qtdemo::onVolumeSliderMoved(int position){
     qreal volume = static_cast<qreal>(position) / 100.0;
     audioOutput->setVolume(volume);
     ui->volumeValueLabel->setText(QString("%1%").arg(position));
+}
+
+void qtdemo::onMediaStatusChanged(QMediaPlayer::MediaStatus status){
+    if(status == QMediaPlayer::EndOfMedia){
+        on_nextButton_clicked();
+    }
+}
+
+void qtdemo::keyPressEvent(QKeyEvent *event){
+    switch (event->key())
+    {
+    case Qt::Key_Right:
+        on_nextButton_clicked();
+        break;
+    case Qt::Key_Left:
+        on_prevButton_clicked();
+        break;
+    default:
+        break;
+    }
 }
